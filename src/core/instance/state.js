@@ -61,6 +61,7 @@ export function initState (vm: Component) {
   }
 }
 
+// 初始化props
 function initProps (vm: Component, propsOptions: Object) {
   const propsData = vm.$options.propsData || {}
   const props = vm._props = {}
@@ -72,10 +73,15 @@ function initProps (vm: Component, propsOptions: Object) {
   if (!isRoot) {
     toggleObserving(false)
   }
+
+  // 遍历定义的props配置
   for (const key in propsOptions) {
     keys.push(key)
+
+    // 验证props数据并获取
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
+
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)
       if (isReservedAttribute(hyphenatedKey) ||
@@ -97,18 +103,21 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
+      // 给prop对应的值变成响应式 调用 defineReactive
       defineReactive(props, key, value)
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
+      // 通过proxy代理  吧 vm._props.xxx 变成 vm.xxx  这样就可以在methods中使用this.xxx访问数据了
       proxy(vm, `_props`, key)
     }
   }
   toggleObserving(true)
 }
 
+// 初始化data
 function initData (vm: Component) {
   let data = vm.$options.data
   data = vm._data = typeof data === 'function'

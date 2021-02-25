@@ -41,9 +41,14 @@ export class Observer {
 
   constructor (value: any) {
     this.value = value
+    // 实例化 Dep 对象
     this.dep = new Dep()
     this.vmCount = 0
+
+    // 执行def函数 自身实例添加到数据对象 value 的 __ob__ 属性上
     def(value, '__ob__', this)
+    
+    // 数组对象单独进行处理  会调用 observeArray 方法  遍历每一项 挨个添加 Observe
     if (Array.isArray(value)) {
       if (hasProto) {
         protoAugment(value, arrayMethods)
@@ -52,6 +57,7 @@ export class Observer {
       }
       this.observeArray(value)
     } else {
+    // 遍历对象的 key 调用 defineReactive 方法
       this.walk(value)
     }
   }
@@ -106,12 +112,16 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * Attempt to create an observer instance for a value,
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
+ * 
+ * 给对象的属性添加 getter 和 setter
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
+  // 保证添加gettersetter数据不是对象和vnode节点
   if (!isObject(value) || value instanceof VNode) {
     return
   }
   let ob: Observer | void
+  // 存在ob  直接返回
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -121,6 +131,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
+  // 实例化 Observe
     ob = new Observer(value)
   }
   if (asRootData && ob) {
@@ -131,6 +142,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 
 /**
  * Define a reactive property on an Object.
+ * 定义一个响应式对象，给对象动态添加 getter 和 setter
  */
 export function defineReactive (
   obj: Object,
@@ -139,6 +151,7 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
+  // 实例化 Dep 对象
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
@@ -153,6 +166,7 @@ export function defineReactive (
     val = obj[key]
   }
 
+  // 子对象递归调用observe
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -160,6 +174,7 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // 依赖收集
         dep.depend()
         if (childOb) {
           childOb.dep.depend()
