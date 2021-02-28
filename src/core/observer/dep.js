@@ -11,6 +11,7 @@ let uid = 0
  * directives subscribing to it.
  */
 export default class Dep {
+  // 全局唯一 Watcher
   static target: ?Watcher;
   id: number;
   subs: Array<Watcher>;
