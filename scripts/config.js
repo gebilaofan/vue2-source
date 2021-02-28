@@ -125,8 +125,8 @@ const builds = {
     dest: resolve('dist/vue.js'),   // 输出输出文件
     format: 'umd',    // 编译格式 es： ES Modules，使用ES6的模板语法输出  cjs： CommonJs Module，遵循CommonJs Module规范的文件输出 amd： AMD Module,遵循AMD Module规范的文件输出 umd： 支持外链规范的文件输出，此文件可以直接使用script标签
     env: 'development',   // 环境  开发环境
-    alias: { he: './entity-decoder' },    // 
-    banner
+    alias: { he: './entity-decoder' },    // 别名
+    banner // 每个包前面的注释-版本/作者/日期.etc
   },
   // Runtime+compiler production build  (Browser)
   'web-full-prod': {

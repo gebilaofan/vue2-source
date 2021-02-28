@@ -51,12 +51,12 @@ export function initMixin (Vue: Class<Component>) {
     // expose real self
     vm._self = vm
     initLifecycle(vm)   // 初始化生命周期 src/core/instance/lifecycle.js
-    initEvents(vm)      // 初始化事件 src/core/instance/events.js
+    initEvents(vm)      // 初始化eventBus src/core/instance/events.js
     initRender(vm)      // 初始化render src/core/instance/render.js
     callHook(vm, 'beforeCreate')     // 调用beforeCreate钩子
-    initInjections(vm) // resolve injections before data/props    // 初始化注入值 before data/props src/core/instance/inject.js
-    initState(vm)       // 挂载 data/props/methods/watcher/computed
-    initProvide(vm) // resolve provide after data/props   // 初始化Provide after data/props
+    initInjections(vm) // resolve injections before data/props    // 初始化inject src/core/instance/inject.js
+    initState(vm)       // 初始化props、methods、data、computed与watch等状态数据  src/core/instance/state.js
+    initProvide(vm) // resolve provide after data/props   // 初始化Provide after data/props  src/core/instance/inject.js
     callHook(vm, 'created')   // 调用created钩子
 
     /* istanbul ignore if */
