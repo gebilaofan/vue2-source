@@ -86,6 +86,8 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
 
 export function nextTick (cb?: Function, ctx?: Object) {
   let _resolve
+
+  // 保存回调
   callbacks.push(() => {
     if (cb) {
       try {
@@ -99,6 +101,9 @@ export function nextTick (cb?: Function, ctx?: Object) {
   })
   if (!pending) {
     pending = true
+
+    // 在宏观任务/微观任务中  执行所有的回调
+    // 保证在同一个 tick 内多次执行 nextTick 不会开启多个异步任务  而把这些异步任务都压成一个同步任务，在下一个 tick 执行完毕。
     timerFunc()
   }
   // $flow-disable-line

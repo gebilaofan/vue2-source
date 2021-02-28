@@ -103,6 +103,9 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
+      // render watcher 中  getter代表着渲染函数 即执行 updateComponent 函数中的  updateComponent方法 vm._update(vm._render(), hydrating)
+
+      // 这个方法生成 渲染 VNode，并且在这个过程中会对 vm 上的数据访问，这个时候就触发了数据对象的 getter
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -114,9 +117,12 @@ export default class Watcher {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
       if (this.deep) {
+        // 这个是要递归去访问 value，触发它所有子项的 getter
         traverse(value)
       }
+      // 实际上就是把 Dep.target 恢复成上一个状态 因为当前 vm 的数据依赖收集已经完成 那么对应的渲染Dep.target 也需要改变
       popTarget()
+      // 依赖清空
       this.cleanupDeps()
     }
     return value
@@ -127,6 +133,7 @@ export default class Watcher {
    */
   addDep (dep: Dep) {
     const id = dep.id
+    // 保证同一数据不会被添加多次
     if (!this.newDepIds.has(id)) {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
@@ -139,11 +146,19 @@ export default class Watcher {
   /**
    * Clean up for dependency collection.
    */
+
+   /* 
+    考虑到 Vue 是数据驱动的，所以每次数据变化都会重新 render，
+    那么 vm._render() 方法又会再次执行，并再次触发数据的 getters，
+    所以 Wathcer 在构造函数中会初始化 2 个 Dep 实例数组，newDeps 表示新添加的 Dep 实例数组，
+    而 deps 表示上一次添加的 Dep 实例数组。
+   */
   cleanupDeps () {
     let i = this.deps.length
     while (i--) {
       const dep = this.deps[i]
       if (!this.newDepIds.has(dep.id)) {
+        // 那么为什么需要做 deps 订阅的移除呢，在添加 deps 的订阅过程，已经能通过 id 去重避免重复订阅了
         dep.removeSub(this)
       }
     }
@@ -178,6 +193,8 @@ export default class Watcher {
    */
   run () {
     if (this.active) {
+      // 获取当前的值   对这个值做判断  新值旧值不等
+      // 如果是渲染 watcher  this.get() 求值的话会重新触发重新渲染  页面数据就会发生改变
       const value = this.get()
       if (
         value !== this.value ||
@@ -192,6 +209,7 @@ export default class Watcher {
         this.value = value
         if (this.user) {
           try {
+            // 执行watcher回调
             this.cb.call(this.vm, value, oldValue)
           } catch (e) {
             handleError(e, this.vm, `callback for watcher "${this.expression}"`)

@@ -153,10 +153,12 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
+      // 数据代理  直接将data数据绑定到vm也就是this上
       proxy(vm, `_data`, key)
     }
   }
   // observe data
+  // 吧 data数据变成响应式的
   observe(data, true /* asRootData */)
 }
 

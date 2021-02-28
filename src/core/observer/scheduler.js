@@ -81,10 +81,16 @@ function flushSchedulerQueue () {
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
+  // 队列排序  确保一下几点
+  // 1.组件的更新由父到子
+  // 2.用户的自定义 watcher 要优先于渲染 watcher 执行
+  // 3.如果一个组件在父组件的 watcher 执行期间被销毁，那么它对应的 watcher 执行都可以被跳过，所以父组件的 watcher 应该先执行
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+
+  // 队列遍历
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     if (watcher.before) {
@@ -92,6 +98,8 @@ function flushSchedulerQueue () {
     }
     id = watcher.id
     has[id] = null
+
+    // 执行每个watcher run
     watcher.run()
     // in dev build, check and stop circular updates.
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
@@ -114,6 +122,8 @@ function flushSchedulerQueue () {
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
 
+  // 状态恢复
+  // 控制流程状态的一些变量恢复到初始值   把 watcher 队列清空。
   resetSchedulerState()
 
   // call component updated and activated hooks
@@ -161,8 +171,12 @@ function callActivatedHooks (queue) {
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
  */
+// 做派发更新的时候的一个优化的点，它并不会每次数据改变都触发 watcher 的回调，
+// 而是把这些 watcher 先添加到一个队列里
+// ，然后在 nextTick 后执行 flushSchedulerQueue。
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
+  // has 保证同一个watcher只添加一次
   if (has[id] == null) {
     has[id] = true
     if (!flushing) {

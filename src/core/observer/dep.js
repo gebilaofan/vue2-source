@@ -57,6 +57,7 @@ Dep.target = null
 const targetStack = []
 
 export function pushTarget (target: ?Watcher) {
+  // 缓存 watcher
   targetStack.push(target)
   Dep.target = target
 }
