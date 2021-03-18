@@ -90,6 +90,8 @@ export default class Watcher {
         )
       }
     }
+
+    // 执行 get 方法
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -99,10 +101,14 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    // 把 Dep.target 赋值为当前的渲染 watcher 并压栈（为了恢复用）
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      // 在渲染watcher中 getter执行的是updateComponent 函数  这个时候生成Vnode 会触发数据对象的getter
+      // getter触发后会调用 dep.depend() 也就是 Dep.target.addDep(this)
+      // 这个时候 Dep.target 已经被赋值为渲染 watcher 紧接着触发water中的 addDep 方法
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {

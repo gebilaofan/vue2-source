@@ -29,6 +29,7 @@ export default class Dep {
     remove(this.subs, sub)
   }
 
+  // 添加依赖收集
   depend () {
     if (Dep.target) {
       Dep.target.addDep(this)

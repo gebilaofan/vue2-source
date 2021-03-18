@@ -131,7 +131,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
-  // 实例化 Observe
+    // 实例化 Observe
     ob = new Observer(value)
   }
   if (asRootData && ob) {
