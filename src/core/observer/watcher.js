@@ -90,6 +90,8 @@ export default class Watcher {
         )
       }
     }
+
+    // 执行 get 方法
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -99,6 +101,7 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    // 把 Dep.target 赋值为当前的渲染 watcher 并压栈（为了恢复用）
     pushTarget(this)
     let value
     const vm = this.vm
