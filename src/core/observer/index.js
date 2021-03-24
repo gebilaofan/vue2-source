@@ -232,8 +232,10 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
 
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     // target是一个合法数组  且 key 为一个合法目标 将 key  val 添加进 target
-    // 注: 此时的 splice 其实已经不仅仅是原生数组的 splice 了
     target.length = Math.max(target.length, key)
+
+    // 调用 splice 方法吧 val 设置到 target 中
+    // 注: 此时的 splice 其实已经不仅仅是原生数组的 splice 了
     target.splice(key, 1, val)
     return val
   }
@@ -242,6 +244,8 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
     target[key] = val
     return val
   }
+
+  // 新增属性
   const ob = (target: any).__ob__
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -265,6 +269,8 @@ export function set(target: Array<any> | Object, key: any, val: any): any {
 
 /**
  * Delete a property and trigger change if necessary.
+ * 删除数据中的某个数据
+ * 删除属性后自动向依赖发送消息  通知 Watcher 数据发生变化
  */
 export function del(target: Array<any> | Object, key: any) {
   if (process.env.NODE_ENV !== 'production' &&
@@ -272,6 +278,9 @@ export function del(target: Array<any> | Object, key: any) {
   ) {
     warn(`Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+
+  // 从 target 中将属性删除  splice 拦截器会自动拦截到数据删除  并触发通知
+  // 数组类型
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1)
     return
@@ -284,13 +293,21 @@ export function del(target: Array<any> | Object, key: any) {
     )
     return
   }
+
+  // 如果 key 不是 target 自身的属性  终止程序
   if (!hasOwn(target, key)) {
     return
   }
+
+  // 删除 key
   delete target[key]
+
+  // obj 不存在 当前数据不是响应式
   if (!ob) {
     return
   }
+
+  // 通知 Watcher 数据发生变化
   ob.dep.notify()
 }
 

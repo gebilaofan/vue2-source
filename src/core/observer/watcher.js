@@ -68,8 +68,12 @@ export default class Watcher {
     this.id = ++uid // uid for batching
     this.active = true
     this.dirty = this.lazy // for lazy watchers
+
+    // 上一次添加的 deps
     this.deps = []
     this.newDeps = []
+
+    // 新添加的 deps
     this.depIds = new Set()
     this.newDepIds = new Set()
     this.expression = process.env.NODE_ENV !== 'production'
@@ -108,7 +112,7 @@ export default class Watcher {
     try {
       // render watcher 中  getter代表着渲染函数 即执行 updateComponent 函数中的  updateComponent方法 vm._update(vm._render(), hydrating)
 
-      // 这个方法生成 渲染 VNode，并且在这个过程中会对 vm 上的数据访问，这个时候就触发了数据对象的 getter
+      // 在 render watcher 中，这个方法生成 渲染 VNode，并且在这个过程中会对 vm 上的数据访问，这个时候就触发了数据对象的 getter
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -120,7 +124,7 @@ export default class Watcher {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
       if (this.deep) {
-        // 这个是要递归去访问 value，触发它所有子项的 getter
+        // 这个是要递归去访问 value，触发它所有子项的 getter  当 deep 为 true时
         traverse(value)
       }
       // 实际上就是把 Dep.target 恢复成上一个状态 因为当前 vm 的数据依赖收集已经完成 那么对应的渲染Dep.target 也需要改变
@@ -138,9 +142,14 @@ export default class Watcher {
     const id = dep.id
     // 保证同一数据不会被添加多次
     if (!this.newDepIds.has(id)) {
+      // 记录当前 Watcher 已经订阅了这个Dep
       this.newDepIds.add(id)
+
+      //  记录自己都订阅了那些 Dep
       this.newDeps.push(dep)
       if (!this.depIds.has(id)) {
+
+        // 将自己订阅到 Dep 中
         dep.addSub(this)
       }
     }
@@ -158,6 +167,8 @@ export default class Watcher {
    */
   cleanupDeps () {
     let i = this.deps.length
+
+    // 循环遍历 deps  取消所有的订阅
     while (i--) {
       const dep = this.deps[i]
       if (!this.newDepIds.has(dep.id)) {
@@ -165,6 +176,8 @@ export default class Watcher {
         dep.removeSub(this)
       }
     }
+
+    // 交换 deps 和 newDeps   并把 newDepIds 和 newDeps 清空。
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp
@@ -245,6 +258,7 @@ export default class Watcher {
 
   /**
    * Remove self from all dependencies' subscriber list.
+   * 通知订阅的 Dep 吧自己从依赖列表中移除
    */
   teardown () {
     if (this.active) {

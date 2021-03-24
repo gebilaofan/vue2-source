@@ -183,8 +183,11 @@ function initComputed (vm: Component, computed: Object) {
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
 
+  // 遍历 computed
   for (const key in computed) {
     const userDef = computed[key]
+
+    // 获取 userDef 的 getter
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
@@ -193,6 +196,7 @@ function initComputed (vm: Component, computed: Object) {
       )
     }
 
+    // 给这个 userDef 创建一个 computed watcher
     if (!isSSR) {
       // create internal watcher for the computed property.
       watchers[key] = new Watcher(
@@ -206,6 +210,8 @@ function initComputed (vm: Component, computed: Object) {
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
+
+    // 判断 key 是不是 vm 上的属性
     if (!(key in vm)) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
@@ -246,10 +252,14 @@ export function defineComputed (
       )
     }
   }
+
+  // 给 key 添加 getter 和 setter
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+// 创建一个 computed getter
 function createComputedGetter (key) {
+  // 返回一个 getter 方法
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
@@ -298,6 +308,7 @@ function initMethods (vm: Component, methods: Object) {
   }
 }
 
+// 初始化 watch
 function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
@@ -353,6 +364,7 @@ export function stateMixin (Vue: Class<Component>) {
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
 
+  // 原型 watch
   Vue.prototype.$watch = function (
     expOrFn: string | Function,
     cb: any,
@@ -365,6 +377,7 @@ export function stateMixin (Vue: Class<Component>) {
     options = options || {}
     options.user = true
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // 判断用户是否使用 immediate 参数 立即调用回调
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value)
@@ -372,6 +385,8 @@ export function stateMixin (Vue: Class<Component>) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)
       }
     }
+
+    // 返回一个取消订阅 Watcher 函数
     return function unwatchFn () {
       watcher.teardown()
     }

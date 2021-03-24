@@ -184,6 +184,9 @@ export function queueWatcher (watcher: Watcher) {
     } else {
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
+
+      // 当执行一次 flushSchedulerQueue 后 会对 queue 长度求值  因为在 watcher.run() 的时候  有可能重新添加了 watcher
+      // 这个时候 flushing 已经为 true 就会执行到这里 吧新添加的 watcher 插入到队列当中
       let i = queue.length - 1
       while (i > index && queue[i].id > watcher.id) {
         i--

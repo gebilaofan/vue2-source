@@ -36,6 +36,7 @@ export default class Dep {
     }
   }
 
+  // 通知所有 Watcher
   notify () {
     // stabilize the subscriber list first
     const subs = this.subs.slice()
@@ -45,6 +46,8 @@ export default class Dep {
       // order
       subs.sort((a, b) => a.id - b.id)
     }
+
+    // 遍历所有的 subs  触发更新
     for (let i = 0, l = subs.length; i < l; i++) {
       subs[i].update()
     }
